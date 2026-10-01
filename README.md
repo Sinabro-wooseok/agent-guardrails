@@ -1,6 +1,6 @@
 # agent-guardrails
 
-Small, real pieces from the agent setup I run every day as the sole engineer of a short-term rental marketplace.
+Small, real pieces from the agent setup I run every day as the lead engineer of a short-term rental marketplace ([resume](https://sinabro-wooseok.github.io/)).
 They are extracted from production use, with personal data and company-specific paths removed.
 
 The theme is the same in both: **let the agent do the work, but put the boundaries in code, not in the prompt.**
