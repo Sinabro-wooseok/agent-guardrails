@@ -1,0 +1,7 @@
+{
+  "name": "mail-triage",
+  "private": true,
+  "description": "IMAP unread-mail collector used as the input stage of a scheduled mail-triage agent",
+  "scripts": { "peek": "node triage_unseen.js --peek" },
+  "dependencies": { "dotenv": "^17.0.0", "imapflow": "^1.0.0", "mailparser": "^3.7.0" }
+}
