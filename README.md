@@ -45,6 +45,32 @@ cd mail-triage && npm install && cp .env.example .env   # fill in IMAP credentia
 node triage_unseen.js --peek
 ```
 
+## How the whole setup is wired
+
+The two pieces above sit inside a larger runtime. Rules that live only in the prompt get forgotten, so each rule is enforced at one of these points instead.
+
+```mermaid
+flowchart TD
+    A[User request] --> B["Session start (3 hooks)<br/>inject the ops-doc index and current state"]
+    B --> C["Every prompt (2 hooks)<br/>language rule, paths to related docs"]
+    C --> D{Agent plans}
+    D -->|tool call| E["Before a tool runs (8 hooks)<br/>deny or allow with a note"]
+    E --> E1[Shell guard:<br/>unbounded loops, guessed coordinate clicks]
+    E --> E2[Click gate:<br/>stop if the page is not the expected one]
+    E --> E3[Device lease:<br/>one session owns a simulator for 5 min]
+    E --> F[Tool runs]
+    F --> G["After a tool runs (4 hooks)<br/>post-edit checks, usage logging"]
+    G --> D
+    D -->|final answer| H["Stop (4 hooks)<br/>check the reply against the rules,<br/>send it back once if it breaks one"]
+    D -.->|long session| I["Before compaction (1 hook)<br/>write a handover note"]
+    M[("Memory<br/>one fact per file + an index<br/>loaded every session")] -.-> D
+    Q[("Deferred-check queue<br/>a runner takes due items every 2 h,<br/>3 h claim, release on failure")] -.-> D
+```
+
+- Irreversible actions (delete, customer messages, payments, force push) need a human approval in chat.
+- Feedback memories store the reason and when to apply it, not only the rule, so a rule does not spread past the situation it came from.
+- "Check this again in a few days" goes into the queue instead of a new scheduled job per task.
+
 ## Design notes
 
 - Deterministic code collects and sanitizes. The model only summarizes and ranks. Actions with side effects (sending, deleting, paying) go through a human approval step.
