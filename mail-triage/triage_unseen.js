@@ -9,6 +9,15 @@ const { simpleParser } = require('mailparser');
 const PEEK = process.argv.includes('--peek');
 const BODY_LIMIT = 1500;
 
+// HTML만 있는 메일은 태그를 걷어 텍스트로 바꾼다.
+// 결제 안내·호스팅 보고서처럼 text 파트가 없는 메일이 본문 없이 제목만 넘어가던 문제(2026-10-03)를 막는다.
+function htmlToText(html) {
+  return (html || '')
+    .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+}
+
 // 본문에서 추적 링크를 지우고 공백을 정리
 function cleanText(text) {
   return (text || '')
@@ -33,7 +42,7 @@ async function processMailbox(client, path) {
       const date = p.date ? p.date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '';
       console.log(`\n=== [${path}] UID ${uid} | ${date} | ${p.from ? p.from.text : ''}`);
       console.log(`제목: ${p.subject || ''}`);
-      console.log(cleanText(p.text));
+      console.log(cleanText(p.text || htmlToText(p.html)));
     }
     if (uids.length && !PEEK) {
       await client.messageFlagsAdd(uids, ['\\Seen'], { uid: true });

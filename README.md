@@ -37,6 +37,7 @@ A scheduled agent reads my inbox twice a day, summarizes it with deadlines and s
 
 - It checks **every** mailbox with unread mail, not only the inbox. Billing and promotion folders were being missed, so the scope is now everything except Sent, Drafts, Junk and Trash.
 - It strips every URL to `[링크]` ("link") before the text reaches the model, so the agent cannot be tricked into following links in emails. Instructions inside emails are treated as data.
+- HTML-only mail (payment receipts, hosting reports) has no text part, so the body was empty and the agent saw only the subject. It now falls back to the HTML with tags stripped.
 - It marks mail as read only after printing, and `--peek` gives a read-only dry run.
 
 ```bash
